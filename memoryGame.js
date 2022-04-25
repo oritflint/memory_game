@@ -61,7 +61,7 @@ function checkFit(cardSelected){
                 this.className = "card bg-success"
             } 
             element.onmouseover = function(){
-                this.className = "card hoverbg"
+                this.className = "card hoverC"
             }
         })          
     
@@ -82,7 +82,7 @@ for(let j=0;j<ShuflledCards.length;j++){
     cardDiv = document.createElement("div")
     cardDiv.className="card bg-success"
     cardDiv.onmouseover = function(){
-        this.className = "card hoverbg"
+        this.className = "card hoverC"
     }
     cardDiv.onmouseleave = function(){
         this.className = "card bg-success"
@@ -91,11 +91,11 @@ for(let j=0;j<ShuflledCards.length;j++){
     cardDiv.onclick = function(){       
         //debugger
         this.getElementsByTagName('span')[0].style.visibility = "visible"  
-        this.className = "card selected"          
+        this.className = "card selectedC"          
         this.onmouseleave = ""
         this.onmouseover = "" 
 
-        let cardSelected = this.parentNode.getElementsByClassName("selected")       
+        let cardSelected = this.parentNode.getElementsByClassName("selectedC")       
         let isFirstSelected = cardSelected.length > 1 ? false : true     
 
         setTimeout(function() {
