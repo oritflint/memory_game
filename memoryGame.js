@@ -1,17 +1,38 @@
 
-const cards = ["A","B","C","D","E","F","G","a","b","c","d","e","f","g"]
-// "<img id='A-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/American_Alligator.jpg/800px-American_Alligator.jpg' width=150 height=150 />",
-// "<img id='B-pic' src='https://upload.wikimedia.org/wikipedia/commons/9/9e/Ours_brun_parcanimalierpyrenees_1.jpg' width=150 height=150 />",
-// "<img id='C-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Giraffe_Mikumi_National_Park.jpg/800px-Giraffe_Mikumi_National_Park.jpg' width=150 height=150 />",
-// "<img id='D-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Bucephala-albeola-010.jpg/330px-Bucephala-albeola-010.jpg' width=150 height=150 />",
-// "<img id='E-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/African_elephant_warning_raised_trunk.jpg/1280px-African_elephant_warning_raised_trunk.jpg' width=150 height=150 />",
-// "<img id='F-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Georgia_Aquarium_-_Giant_Grouper_edit.jpg/800px-Georgia_Aquarium_-_Giant_Grouper_edit.jpg' width=150 height=150 />",
-// "<img id='G-pic' src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Giraffe_Mikumi_National_Park.jpg/800px-Giraffe_Mikumi_National_Park.jpg' width=150 height=150 />",
-// ]
-let ShuflledCards=shuffle()
+let cards = []
+let players = [{
+    name: "PLAYER 1",
+    scores: 0,
+},
+{
+    name: "PLAYER 2",
+    scores: 0,
+}]
+const CONST_BONUS = 10
+
+//--------------------------------------------------------------------------
+let gameTbl = document.getElementById("gameTbl")
+let divPlayers = document.getElementById("players")
+let pScoreSpan = [...document.querySelectorAll(".pscore")]
+let pNameSpan = [...document.querySelectorAll(".pname")]
+let btnNewGame = document.getElementById("btnNewGame")
+let btnAddPNames = document.getElementById("btnAddPNames")
+let btnChooseLevel = document.getElementById("btnChooseLevel")
+let PopupNamesDiv = document.getElementById("divAddPlayers")
+let PopupChooseLevel = document.getElementById("divChooseLevel")
+let PopupEndOfGame = document.getElementById("divEndOfGame")
+let btnClose = document.getElementById("btnClose")
+
+let ShuflledCards
 let cardDiv
+let gameLevel
+let currPlayer
+let tempArr
+let isEndOfGame = false
+let cardClass = "card"
+//--------------------------------------------------------------------------
 
-
+//ערבוב הקלפים
 function shuffle(){
     let SrcCards = cards.slice()
     let DestCards = []
@@ -27,16 +48,11 @@ function shuffle(){
         SrcCards.splice(RandIndex,1)
 
     }
-
     return(DestCards)
 }
 
-setTimeout(() => {
-    console.log("Delayed for 1 second.");
-  }, "3000")
-
+//בדוק התאמה
 function checkFit(cardSelected){
-    debugger
     let FirstLetter = cardSelected[0].getElementsByTagName("span")[0].innerHTML.toLowerCase()
     let SecondLetter = cardSelected[1].getElementsByTagName("span")[0].innerHTML.toLowerCase()
     
@@ -51,69 +67,226 @@ function checkFit(cardSelected){
         Array.from(cardSelected).forEach(element => {
             element.style.visibility = "hidden"
         }) 
+        //הוסף ניקוד
+        players[currPlayer].scores += 10
+        pScoreSpan[currPlayer].innerHTML = players[currPlayer].scores
+
+        //ובדוק אם משחק הסתיים
+        isEndOfGame = true
+        tempArr = document.getElementsByClassName(cardClass);
+        [].forEach.call(tempArr, function(e) {
+            if(e.style.visibility != "hidden") isEndOfGame=false
+        });
+    
     } 
     //אם שונה
     else{
         
-        //החזר את הקלפים למצב ראשוני        
+        //החזר את הקלפים למצב ראשוני
         Array.from(cardSelected).forEach(element => {
             element.onmouseleave = function(){
-                this.className = "card bg-success"
+                this.className = cardClass
             } 
+
             element.onmouseover = function(){
-                this.className = "card hoverC"
+                this.className = cardClass + " hoverC"
             }
-        })          
-    
+        })
+
+        //והעבר תור לשחקן הבא
+        divPlayers.children[currPlayer].className = "player"
+        currPlayer==0? currPlayer=1 : currPlayer=0
+        divPlayers.children[currPlayer].classList.add("currPlayer")
+
     } 
     Array.from(cardSelected).forEach(element => {
-        element.className = "card bg-success"
+        element.className = cardClass
     })  
+     
+     if(isEndOfGame){
+         PopupEndOfGame.style.display="block"
+         let maxScores =  Math.max(...players.map(o => o.scores))
+         let winner =  players.filter(o => o.scores===maxScores)
+         if(winner.length>1){
+            document.getElementById("winnerName").innerHTML = "TEKO"
+            document.getElementById("winnerScores").innerHTML = "each player got " + winner[0].scores + " scores!"
+         }
+         else{
+            document.getElementById("winnerScores").innerHTML = "Got " +  winner[0].scores + " scores!"
+            document.getElementById("winnerName").innerHTML = winner[0].name
+         }
+         btnClose.onclick= function(){
+            PopupEndOfGame.style.display="none"
+           }
+   }
+
+    tempArr = document.getElementsByClassName(cardClass);
+    [].forEach.call(tempArr, function(e) {
+        e.style.pointerEvents="auto"
+    });
 
 }
 
+//קבע שמות לשחקנים
+function initPlayers(){
+    currPlayer = 0
+    divPlayers.children[currPlayer].classList.add("currPlayer")
 
-//שולחן משחק
-let gameTbl = document.getElementById("gameTbl")
+    pScoreSpan.map((elem,i)=>{
+        elem.innerHTML=players[i].scores
+    })
 
-//:שמים את הקלפים על השולחן
-for(let j=0;j<ShuflledCards.length;j++){
+    pNameSpan.map((elem,i)=>{
+        elem.innerHTML=players[i].name
+    })    
+}
 
-    cardDiv = document.createElement("div")
-    cardDiv.className="card bg-success"
-    cardDiv.onmouseover = function(){
-        this.className = "card hoverC"
+//קבע רמת משחק
+function initCards(gameLevel){
+    let cardCpls;
+    switch(gameLevel){
+        case 'high': 
+            cardCpls = 13
+            cardClass = "cardHigh"
+        break;
+
+        case 'medium': 
+            cardCpls = 9
+            cardClass = "cardMedium"
+        break;
+
+        default: cardCpls =4
     }
-    cardDiv.onmouseleave = function(){
-        this.className = "card bg-success"
+    cards = []
+    for(let i=0;i<cardCpls;i++){
+        cards.push(String.fromCharCode(i+65))
     }
 
-    cardDiv.onclick = function(){       
-        //debugger
-        this.getElementsByTagName('span')[0].style.visibility = "visible"  
-        this.className = "card selectedC"          
-        this.onmouseleave = ""
-        this.onmouseover = "" 
+    for(let i=0;i<cardCpls;i++){
+        cards.push(String.fromCharCode(i+97))
+    }
+    ShuflledCards=shuffle()
+    InitGame()
+    tempArr = document.getElementsByClassName(cardClass);
+    [].forEach.call(tempArr, function(e) {
+        e.style.pointerEvents="auto"
+    });
 
-        let cardSelected = this.parentNode.getElementsByClassName("selectedC")       
-        let isFirstSelected = cardSelected.length > 1 ? false : true     
+}
 
-        setTimeout(function() {
-            //כשנבחר כקלף שני
+//התחל משחק
+function InitGame(){
+    gameTbl.innerHTML=""
+    //:שמים את הקלפים על השולחן
+    for(let j=0;j<ShuflledCards.length;j++){
+
+        cardDiv = document.createElement("div")
+        cardDiv.className=cardClass
+        cardDiv.onmouseover = function(){
+            this.className = cardClass+" hoverC"
+        }
+        cardDiv.onmouseleave = function(){
+            this.className = cardClass
+        }
+
+        cardDiv.onclick = function(){       
+            this.getElementsByTagName('span')[0].style.visibility = "visible"  
+            this.className = cardClass+" selectedC"          
+            this.onmouseleave = ""
+            this.onmouseover = "" 
+
+            let cardSelected = this.parentNode.getElementsByClassName("selectedC")       
+            let isFirstSelected = cardSelected.length > 1 ? false : true     
+
             if(!isFirstSelected){
-                //בדוק את הקלף הקודם
-                checkFit(cardSelected)
+                tempArr= document.getElementsByClassName(cardClass);
+                [].forEach.call(tempArr, function(e) {
+                    e.style.pointerEvents="none"
+                });
             }
-        }, 1000);
-        
+            setTimeout(function() {
+                //כשנבחר כקלף שני
+                if(!isFirstSelected){
+
+                    //בדוק את הקלף הקודם
+                    checkFit(cardSelected)
+                }
+            }, 1000);
+            
+            
+        }
+
+        //כתוב על הקלף
+        span = document.createElement("span")   
+        span.innerHTML = ShuflledCards[j]    
+        span.style.visibility="hidden"
+
+        //שים על השולחן
+        cardDiv.appendChild(span)
+        gameTbl.appendChild(cardDiv)
+}
+    btnNewGame.onclick=function(){
+        location.reload();
     }
 
-    //כתוב על הקלף
-    span = document.createElement("span")   
-    span.innerHTML = ShuflledCards[j]    
-    span.style.visibility="hidden"
+    btnAddPNames.onclick=function(){
+        tempArr = document.getElementsByClassName(cardClass);
+        [].forEach.call(tempArr, function(e) {
+            e.style.pointerEvents="none"
+        });
 
-    //שים על השולחן
-    cardDiv.appendChild(span)
-    gameTbl.appendChild(cardDiv)
+        PopupNamesDiv.style.display="block"
+        PopupChooseLevel.style.display="none"
+
+        let txtFrstP = document.getElementById("player1")
+        let txtSecP = document.getElementById("player2")
+        let btnAppNames = document.getElementById("btnAppNames")
+
+        btnAppNames.onclick=function(){
+            players[0].name= txtFrstP.value
+            players[1].name= txtSecP.value
+            pNameSpan.map((elem,i)=>{
+                elem.innerHTML=players[i].name
+            })
+            PopupNamesDiv.style.display="none"
+
+            tempArr = document.getElementsByClassName(cardClass);
+            [].forEach.call(tempArr, function(e) {
+                e.style.pointerEvents="auto"
+            });
+        }
+    }
+
+    btnChooseLevel.onclick=function(){
+        tempArr = document.getElementsByClassName(cardClass);
+        [].forEach.call(tempArr, function(e) {
+            e.style.pointerEvents="none"
+        });
+
+        PopupChooseLevel.style.display="block"
+        PopupNamesDiv.style.display="none"
+
+        let btnHigh = document.getElementById("btnHigh")
+        btnHigh.onclick=function(){
+            initCards("high")
+            
+            PopupChooseLevel.style.display="none"
+        }
+        let btnMedium = document.getElementById("btnMedium")
+        btnMedium.onclick=function(){
+            initCards("medium")
+            PopupChooseLevel.style.display="none"
+        }        
+        let btnLow = document.getElementById("btnLow")
+        btnLow.onclick=function(){
+            initCards("low")
+            PopupChooseLevel.style.display="none"
+        }
+    }
 }
+
+//--------------------------------------------------------------------------
+
+
+initPlayers()
+initCards("low")
